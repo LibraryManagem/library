@@ -4,6 +4,10 @@
   <groupId>org.maven</groupId>
   <artifactId>library</artifactId>
   <packaging>war</packaging>
+  <properties>
+        <file.encoding>UTF-8</file.encoding>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
   <version>0.0.1-SNAPSHOT</version>
   <name>library Maven Webapp</name>
   <url>http://maven.apache.org</url>
