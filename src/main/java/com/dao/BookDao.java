@@ -36,6 +36,10 @@ public class BookDao {
 	private final static String GET_BOOK_FROM_BUY_LIST = "SELECT * FROM buy WHERE id = ? ";
 	private final static String GET_AMOUNT_FROM_BUY_LIST = "SELECT amount FROM buy WHERE id = ? ";
 	private final static String ADD_BOOK_TO_WAIT_LIST = "INSERT INTO wait VALUES(?,?,?,?,?,?,?,?,?,?)";
+	//从wait表上架至仓库
+	private final static String GET_BOOK_FROM_WAIT_LIST = "SELECT * FROM wait WHERE id = ? ";
+	private final static String GET_AMOUNT_FROM_WAIT_LIST = "SELECT amount FROM wait WHERE id = ? ";
+	private final static String ADD_BOOK_TO_REPOSITORY = "INSERT INTO repository VALUES(?,?,?,?,?,?,?,?,?,?)";
 	
 	public int countMatchedBooks(String searchWord) {
 		//拼接成模糊查询字符串
@@ -126,5 +130,20 @@ public class BookDao {
 				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
-	
+	public int addToReppository(long bookId) {
+		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_WAIT_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
+		String name = book.getBook_name();
+		int id = book.getBook_id();
+		double price = book.getBook_price();
+		Date pubDate = book.getBook_publish_date();
+		String press = book.getBook_press();
+		String author = book.getBook_author();
+		int lv = book.getBook_lv();
+		String type = book.getBook_type();
+		String isbn = book.getBook_isbn();
+		int amount = jdbcTemplate.queryForObject(GET_AMOUNT_FROM_WAIT_LIST, new Object[] {bookId}, Integer.class);
+		
+		return jdbcTemplate.update(ADD_BOOK_TO_REPOSITORY, 
+				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+	}
 }

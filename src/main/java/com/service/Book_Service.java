@@ -46,4 +46,8 @@ public class Book_Service {
 	public boolean addToWait(long bookId) {
 		return bookDao.addToWait(bookId) > 0;
 	}
+	public boolean addToRepository(long bookId) {
+		
+		return bookDao.addToReppository(bookId) > 0;
+	}
 }
