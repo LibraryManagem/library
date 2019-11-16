@@ -26,7 +26,7 @@ public class Book_Service {
 	public boolean addBook(Book book) {//上架
 		return bookDao.addBook(book) > 0;
 	}
-	public int deleteBook(long bookId) {//下架
+	public int deleteBook(int bookId) {//下架
 		return bookDao.deletebook(bookId);
 	}
 	public boolean editBook(Book book) {//修改图书信息
@@ -35,7 +35,7 @@ public class Book_Service {
 	public ArrayList<Book> getAllBooks(){//获取所有图书
         return bookDao.getAllBooks();
     }
-	public Book getBook(long bookId) {//由id精确查找某本图书
+	public Book getBook(int bookId) {//由id精确查找某本图书
 		Book book = bookDao.getBook(bookId);
 		return book;
 	}
@@ -43,10 +43,10 @@ public class Book_Service {
 		
 		return bookDao.buyBook(book, amount) > 0;
 	}
-	public boolean addToWait(long bookId) {
+	public boolean addToWait(int bookId) {
 		return bookDao.addToWait(bookId) > 0;
 	}
-	public boolean addToRepository(long bookId) {
+	public boolean addToRepository(int bookId) {
 		
 		return bookDao.addToReppository(bookId) > 0;
 	}

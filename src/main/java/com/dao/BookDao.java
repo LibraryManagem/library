@@ -69,7 +69,7 @@ public class BookDao {
 				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn});
 	}
 	
-	public int deletebook(long bookId) {
+	public int deletebook(int bookId) {
 		return jdbcTemplate.update(DELETE_BOOK_SQL, bookId);
 	}
 	
@@ -93,7 +93,7 @@ public class BookDao {
 		return books;
 	}
 	
-	public Book getBook(long bookId) {
+	public Book getBook(int bookId) {
 		return (Book) jdbcTemplate.queryForObject(GET_BOOK_BY_ID_SQL, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
 	}
 	
@@ -112,7 +112,7 @@ public class BookDao {
 				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
-	public int addToWait(long bookId) {
+	public int addToWait(int bookId) {
 		
 		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_BUY_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
 		String name = book.getBook_name();
@@ -130,7 +130,7 @@ public class BookDao {
 				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
-	public int addToReppository(long bookId) {
+	public int addToReppository(int bookId) {
 		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_WAIT_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
 		String name = book.getBook_name();
 		int id = book.getBook_id();
