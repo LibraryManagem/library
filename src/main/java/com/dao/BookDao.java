@@ -21,15 +21,21 @@ public class BookDao {
 	}
 	
 	private final static String ADD_BOOK_SQL = "INSERT INTO book VALUES(?,?,?,?,?,?,?,?,?)";
-	private final static String DELETE_BOOK_SQL = "DELETE FROM book WHERE book_id = ? ";
-	private final static String EDIT_BOOK_SQL = "UPDATE book set book_name= ? ,book_id= ? ,book_price= ? ,book_publish_date= ? ,book_press= ? ,book_author= ? ,book_lv= ? ,book_type= ? ,book_isbn= ? ";
+	private final static String DELETE_BOOK_SQL = "DELETE FROM book WHERE id = ? ";
+	private final static String EDIT_BOOK_SQL = "UPDATE book set name= ? ,id= ? ,price= ? ,publish_date= ? ,press= ? ,author= ? ,lv= ? ,type= ? ,isbn= ? ";
 	private final static String QUERY_ALL_BOOKS_SQL = "SELECT * FROM book";
 	//按照书名或者id模糊查询
-	private final static String QUERY_BOOK_SQL = "SELECT * FROM book WHERE book_name like ? or book_id like ? ";
+	private final static String QUERY_BOOK_SQL = "SELECT * FROM book WHERE name like ? or id like ? ";
 	//匹配到的结果的个数
-	private final static String COUNT_MATCHED_SQL = "SELECT COUNT(*) FROM book WHERE book_name like ? or book_id like ? ";
+	private final static String COUNT_MATCHED_SQL = "SELECT COUNT(*) FROM book WHERE name like ? or id like ? ";
 	//根据书号精确匹配图书
-	private final static String GET_BOOK_BY_ID_SQL = "SELECT * FROM book WHERE book_id = ? ";
+	private final static String GET_BOOK_BY_ID_SQL = "SELECT * FROM book WHERE id = ? ";
+	//将要采购的书加入buy表中
+	private final static String ADD_BOOK_TO_BUY_LIST = "INSERT INTO book VALUES(?,?,?,?,?,?,?,?,?,?)";
+	//将buy表中选择的条目加入wait表中
+	private final static String GET_BOOK_FROM_BUY_LIST = "SELECT * FROM buy WHERE id = ? ";
+	private final static String GET_AMOUNT_FROM_BUY_LIST = "SELECT amount FROM buy WHERE id = ? ";
+	private final static String ADD_BOOK_TO_WAIT_LIST = "INSERT INTO wait VALUES(?,?,?,?,?,?,?,?,?,?)";
 	
 	public int countMatchedBooks(String searchWord) {
 		//拼接成模糊查询字符串
@@ -85,6 +91,39 @@ public class BookDao {
 	
 	public Book getBook(long bookId) {
 		return (Book) jdbcTemplate.queryForObject(GET_BOOK_BY_ID_SQL, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
+	}
+	
+	public int buyBook(Book book, int amount) {
+		String name = book.getBook_name();
+		int id = book.getBook_id();
+		double price = book.getBook_price();
+		Date pubDate = book.getBook_publish_date();
+		String press = book.getBook_press();
+		String author = book.getBook_author();
+		int lv = book.getBook_lv();
+		String type = book.getBook_type();
+		String isbn = book.getBook_isbn();
+		
+		return jdbcTemplate.update(ADD_BOOK_TO_BUY_LIST, 
+				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+	}
+	
+	public int addToWait(long bookId) {
+		
+		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_BUY_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
+		String name = book.getBook_name();
+		int id = book.getBook_id();
+		double price = book.getBook_price();
+		Date pubDate = book.getBook_publish_date();
+		String press = book.getBook_press();
+		String author = book.getBook_author();
+		int lv = book.getBook_lv();
+		String type = book.getBook_type();
+		String isbn = book.getBook_isbn();
+		int amount = jdbcTemplate.queryForObject(GET_AMOUNT_FROM_BUY_LIST, new Object[] {bookId}, Integer.class);
+		
+		return jdbcTemplate.update(ADD_BOOK_TO_WAIT_LIST, 
+				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
 	

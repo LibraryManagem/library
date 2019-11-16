@@ -39,8 +39,11 @@ public class Book_Service {
 		Book book = bookDao.getBook(bookId);
 		return book;
 	}
-	public void buyBooks() {//买书进入待上架表
-		//需统一采购表、待上架表、book表属性
+	public boolean buyBook(Book book, int amount) {//买书进入待上架表
+		
+		return bookDao.buyBook(book, amount) > 0;
 	}
-	
+	public boolean addToWait(long bookId) {
+		return bookDao.addToWait(bookId) > 0;
+	}
 }
