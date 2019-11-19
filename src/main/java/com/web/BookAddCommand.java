@@ -1,19 +1,19 @@
-package com.domain;
+package com.web;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Wait {
-
+public class BookAddCommand {
+	
 	private String name;
-	private int id;
 	private double price;
-	private Date publish_date;
+	private Date pubDate;
 	private String press;
 	private String author;
 	private int lv;
 	private String type;
 	private String isbn;
-	private int amount;
 	
 	public String getName() {
 		return name;
@@ -21,23 +21,11 @@ public class Wait {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public int getId() {
-		return id;
-	}
-	public void setId(int id) {
-		this.id = id;
-	}
 	public double getPrice() {
 		return price;
 	}
 	public void setPrice(double price) {
 		this.price = price;
-	}
-	public Date getPublish_date() {
-		return publish_date;
-	}
-	public void setPublish_date(Date publish_date) {
-		this.publish_date = publish_date;
 	}
 	public String getPress() {
 		return press;
@@ -69,11 +57,13 @@ public class Wait {
 	public void setIsbn(String isbn) {
 		this.isbn = isbn;
 	}
-	public int getAmount() {
-		return amount;
+	public Date getPubDate() {
+		return pubDate;
 	}
-	public void setAmount(int amount) {
-		this.amount = amount;
+	public void setPubdate(String pubDate) throws ParseException {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		Date date = sdf.parse(pubDate);
+		this.pubDate = date;
 	}
 	
 }

@@ -9,6 +9,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.domain.Book;
+import com.domain.Buy;
+import com.domain.Repo;
+import com.domain.Wait;
 
 @Repository
 public class BookDao {
@@ -20,7 +23,7 @@ public class BookDao {
 		this.jdbcTemplate = jdbcTemplate;
 	}
 	
-	private final static String ADD_BOOK_SQL = "INSERT INTO book VALUES(?,?,?,?,?,?,?,?,?)";
+	private final static String ADD_BOOK_SQL = "INSERT INTO book VALUES(?,NULL,?,?,?,?,?,?,?)";
 	private final static String DELETE_BOOK_SQL = "DELETE FROM book WHERE id = ? ";
 	private final static String EDIT_BOOK_SQL = "UPDATE book set name= ? ,id= ? ,price= ? ,publish_date= ? ,press= ? ,author= ? ,lv= ? ,type= ? ,isbn= ? ";
 	private final static String QUERY_ALL_BOOKS_SQL = "SELECT * FROM book";
@@ -40,7 +43,10 @@ public class BookDao {
 	private final static String GET_BOOK_FROM_WAIT_LIST = "SELECT * FROM wait WHERE id = ? ";
 	private final static String GET_AMOUNT_FROM_WAIT_LIST = "SELECT amount FROM wait WHERE id = ? ";
 	private final static String ADD_BOOK_TO_REPOSITORY = "INSERT INTO repository VALUES(?,?,?,?,?,?,?,?,?,?)";
-	
+	//获取buy表的所有条目
+	private final static String QUERY_ALL_FROM_BUY = "SELECT * FROM buy";
+	private final static String QUERY_ALL_FROM_WAIT = "SELECT * FROM buy";
+	private final static String QUERY_ALL_FROM_REPOSITORY = "SELECT * FROM buy";
 	public int countMatchedBooks(String searchWord) {
 		//拼接成模糊查询字符串
 		String new_sw = "%" + searchWord + "%";
@@ -56,7 +62,6 @@ public class BookDao {
 	
 	public int addBook(Book book) {
 		String name = book.getBook_name();
-		int id = book.getBook_id();
 		double price = book.getBook_price();
 		Date pubDate = book.getBook_publish_date();
 		String press = book.getBook_press();
@@ -66,7 +71,7 @@ public class BookDao {
 		String isbn = book.getBook_isbn();
 		
 		return jdbcTemplate.update(ADD_BOOK_SQL, 
-				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn});
+				new Object[] {name, price, pubDate, press, author, lv, type, isbn});
 	}
 	
 	public int deletebook(int bookId) {
@@ -109,11 +114,14 @@ public class BookDao {
 		String isbn = book.getBook_isbn();
 		
 		return jdbcTemplate.update(ADD_BOOK_TO_BUY_LIST, 
-				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+				new Object[] {name, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
-	public int addToWait(int bookId) {
+	public int addToWait(int bookId, int amount) {
 		
+		int succ = 0;
+		String amountInBuy = "select amount in buy where id = ?";
+		String modifyAmountInBuy = "update buy set amount = ? where id = ?";
 		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_BUY_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
 		String name = book.getBook_name();
 		int id = book.getBook_id();
@@ -124,13 +132,28 @@ public class BookDao {
 		int lv = book.getBook_lv();
 		String type = book.getBook_type();
 		String isbn = book.getBook_isbn();
-		int amount = jdbcTemplate.queryForObject(GET_AMOUNT_FROM_BUY_LIST, new Object[] {bookId}, Integer.class);
+		//查询buy表中的amount
+		int amount_buy = jdbcTemplate.queryForObject(amountInBuy, new Object[] {bookId}, Integer.class);
+		//如果buy表的amount比参数中的amount大，则将其添加至wait表
+		if ((amount_buy - amount) > 0) {
+			succ =  jdbcTemplate.update(ADD_BOOK_TO_WAIT_LIST, 
+					new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+		} else {
+			return 0;
+		}
+		//若添加成功，则将buy表的amount减去相应数目
+		if (succ > 0) {
+			return jdbcTemplate.update(modifyAmountInBuy, new Object[] {amount_buy - amount,bookId});
+		} else {
+			return 0;
+		}
 		
-		return jdbcTemplate.update(ADD_BOOK_TO_WAIT_LIST, 
-				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
 	}
 	
-	public int addToReppository(int bookId) {
+	public int addToReppository(int bookId,int amount) {
+		int succ = 0;
+		String amountInWait = "select amount in wait where id = ?";
+		String modifyAmountInWait = "update wait set amount = ? where id = ?";
 		Book book = (Book)jdbcTemplate.query(GET_BOOK_FROM_WAIT_LIST, new Object[] {bookId}, new BeanPropertyRowMapper(Book.class));
 		String name = book.getBook_name();
 		int id = book.getBook_id();
@@ -141,9 +164,35 @@ public class BookDao {
 		int lv = book.getBook_lv();
 		String type = book.getBook_type();
 		String isbn = book.getBook_isbn();
-		int amount = jdbcTemplate.queryForObject(GET_AMOUNT_FROM_WAIT_LIST, new Object[] {bookId}, Integer.class);
-		
-		return jdbcTemplate.update(ADD_BOOK_TO_REPOSITORY, 
-				new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+		//查询wait表中的amount
+		int amount_wait = jdbcTemplate.queryForObject(amountInWait, new Object[] {bookId}, Integer.class);
+		//如果wait表的amount比参数中的amount大，则将其添加至repository表
+		if ((amount_wait - amount) > 0) {
+			succ =  jdbcTemplate.update(ADD_BOOK_TO_REPOSITORY, 
+					new Object[] {name, id, price, pubDate, press, author, lv, type, isbn, amount});
+		} else {
+			return 0;
+		}
+		//若添加成功，则将wait表的amount减去相应数目
+		if (succ > 0) {
+			return jdbcTemplate.update(modifyAmountInWait, new Object[] {amount_wait - amount,bookId});
+		} else {
+			return 0;
+		}
+	}
+	
+	public ArrayList<Buy> getBuyList() {
+		ArrayList<Buy> buys = (ArrayList<Buy>) jdbcTemplate.query(QUERY_ALL_FROM_BUY, new BeanPropertyRowMapper(Buy.class));
+		return buys;
+	}
+	
+	public ArrayList<Wait> getWaitList() {
+		ArrayList<Wait> waits = (ArrayList<Wait>) jdbcTemplate.query(QUERY_ALL_FROM_WAIT, new BeanPropertyRowMapper(Wait.class));
+		return waits;
+	}
+	
+	public ArrayList<Repo> getRepositoryList() {
+		ArrayList<Repo> repos = (ArrayList<Repo>) jdbcTemplate.query(QUERY_ALL_FROM_REPOSITORY, new BeanPropertyRowMapper(Repo.class));
+		return repos;
 	}
 }

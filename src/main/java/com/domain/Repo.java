@@ -2,7 +2,7 @@ package com.domain;
 
 import java.util.Date;
 
-public class Wait {
+public class Repo {
 
 	private String name;
 	private int id;

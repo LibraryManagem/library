@@ -3,10 +3,15 @@ package com.service;
 import java.util.ArrayList;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.dao.BookDao;
 import com.domain.Book;
+import com.domain.Buy;
+import com.domain.Repo;
+import com.domain.Wait;
 
+@Service
 public class Book_Service {
 
 	private BookDao bookDao;
@@ -16,11 +21,11 @@ public class Book_Service {
         this.bookDao = bookDao;
     }
 	//返回匹配的书数
-	public int countMatchedBooks(String searchWord) {
-		return bookDao.countMatchedBooks(searchWord);
+	public boolean matchBook(String searchWord) {
+		return bookDao.countMatchedBooks(searchWord) > 0;
 	}
 	//用户查询图书
-	public ArrayList<Book> searchBooks(String searchWord) {
+	public ArrayList<Book> searchBook(String searchWord) {
 		return bookDao.searchBooks(searchWord);
 	}
 	public boolean addBook(Book book) {//上架
@@ -43,11 +48,21 @@ public class Book_Service {
 		
 		return bookDao.buyBook(book, amount) > 0;
 	}
-	public boolean addToWait(int bookId) {
-		return bookDao.addToWait(bookId) > 0;
+	public boolean addToWait(int bookId, int amount) {
+		return bookDao.addToWait(bookId, amount) > 0;
 	}
-	public boolean addToRepository(int bookId) {
+	public boolean addToRepository(int bookId, int amount) {
 		
-		return bookDao.addToReppository(bookId) > 0;
+		return bookDao.addToReppository(bookId, amount) > 0;
 	}
+	
+	public ArrayList<Buy> getBuyList(){//获取所有图书
+        return bookDao.getBuyList();
+    }
+	public ArrayList<Wait> getWaitList(){//获取所有图书
+        return bookDao.getWaitList();
+    }
+	public ArrayList<Repo> getRepoList(){//获取所有图书
+        return bookDao.getRepositoryList();
+    }
 }
